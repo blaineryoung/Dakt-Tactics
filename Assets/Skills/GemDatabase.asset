@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b45f2fb917e3c94dbfb724eb198fbf7, type: 3}
   m_Name: GemDatabase
   m_EditorClassIdentifier: Assembly-CSharp::GemDatabase
-  activeGems: []
+  activeGems:
+  - {fileID: 11400000, guid: 2ba78d8e8b0ae7f40a29deee1fa8f788, type: 2}
   supportGems: []

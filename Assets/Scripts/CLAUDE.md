@@ -19,8 +19,8 @@ FFTSkeleton/
     GridManager.cs         - grid generation, BFS movement range, attack range queries
     Unit.cs                 - base unit stats + socket groups, MP/cooldown handling
     TurnManager.cs            - Charge Time turn queue + turn-order preview
-    BattleController.cs       - input: select/move/cast-gem-skill/end-turn
-    BattleUIController.cs      - minimal TMP-based UI stub
+    BattleController.cs       - action-menu state machine: select/Move/Skill/EndTurn
+    BattleUIController.cs      - TMP UI: status text + action menu (Move/skills/EndTurn)
     Skills/
       SkillTag.cs               - flags enum used for support-gem compatibility
       SkillGemData.cs            - abstract base ScriptableObject for all gems
@@ -29,10 +29,22 @@ FFTSkeleton/
       StatusEffectData.cs           - bare status-effect data stub (Burning, Stunned, etc.)
       GemSocketGroup.cs              - runtime linked-socket group (1 active + N supports)
       EquippedSkillInstance.cs        - calculator: active gem + supports -> final stats
+      GemDatabase.cs                   - ScriptableObject registry for looking up gems by name
 ```
 
 ## Core systems & conventions
 
+- **Player turns are menu-driven, not click-to-act.** `BattleController.ActionState`
+  (Menu / SelectingMoveTile / SelectingSkillTarget) gates input handling in
+  `Update()`. Tile clicks only do something while in a targeting state; while
+  `ActionState.Menu`, all input comes from UI buttons (`OnMoveButtonPressed`,
+  `OnSkillButtonPressed`, `OnEndTurnButtonPressed`). `OnMenuOpened`/`OnMenuClosed`
+  are the events `BattleUIController` uses to show/hide the action menu — keep
+  using these events for menu visibility rather than polling state every frame.
+  Right-click cancels a targeting state back to the menu without consuming the
+  unit's move/action. The AI (`RunSimpleAITurn`) intentionally bypasses this
+  state machine and calls the internal cast path directly, since it doesn't
+  need UI or click confirmation.
 - **Turn order is Charge-Time based, not round-robin.** Every unit accumulates
   `chargeTime += speed` each tick; first to hit `Unit.ChargeThreshold` (100) acts.
   Don't replace this with a simple initiative queue — speed differentials acting
@@ -63,7 +75,9 @@ FFTSkeleton/
   are imported; don't fall back to legacy `UnityEngine.UI.Text`.
 
 ## What's intentionally stubbed (don't be surprised by these)
-- `BattleController.RunSimpleAITurn` — just ends the turn immediately.
+- `BattleController.RunSimpleAITurn` — moves toward the nearest player unit and
+  casts its first equipped skill if in range; no real targeting priority,
+  pathing around obstacles, multi-skill choice, or AoE-aware positioning yet.
 - Job classes don't exist yet — `Unit` is the only unit type so far.
 - `StatusEffectData` is pure data; nothing ticks it yet (the hookup point is
   marked with a `// TODO` in `BattleController.ApplySkillToTarget`).
