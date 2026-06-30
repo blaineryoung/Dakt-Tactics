@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8eb8206163ed724ea9e25ea261b25d5, type: 3}
   m_Name: Heal
   m_EditorClassIdentifier: Assembly-CSharp::ActiveSkillGemData
-  gemName: Fireball
+  gemName: Heal
   description: 
   icon: {fileID: 0}
   color: 3

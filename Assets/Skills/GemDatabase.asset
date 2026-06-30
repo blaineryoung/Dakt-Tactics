@@ -14,4 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GemDatabase
   activeGems:
   - {fileID: 11400000, guid: 2ba78d8e8b0ae7f40a29deee1fa8f788, type: 2}
+  - {fileID: 11400000, guid: 764c0c71c3070b14eb796713aa7dcdef, type: 2}
+  - {fileID: 11400000, guid: d758f00e15c2c0d4e99e616e950ea017, type: 2}
   supportGems: []
