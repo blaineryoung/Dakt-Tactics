@@ -149,6 +149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.BattleSetup
   unitPrefabTemplate: {fileID: 5070756078759666069, guid: 1ebdbe3bb21144d4bb9b25f3386db0e4, type: 3}
+  gemDatabase: {fileID: 11400000, guid: fe81f46d4b5a69c4a90727080c6d9168, type: 2}
 --- !u!4 &46055496
 Transform:
   m_ObjectHideFlags: 0

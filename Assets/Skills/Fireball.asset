@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8eb8206163ed724ea9e25ea261b25d5, type: 3}
+  m_Name: Fireball
+  m_EditorClassIdentifier: Assembly-CSharp::ActiveSkillGemData
+  gemName: Fireball
+  description: 
+  icon: {fileID: 0}
+  color: 3
+  tags: 82
+  level: 1
+  maxLevel: 20
+  mpCost: 10
+  cooldownTurns: 0
+  minRange: 1
+  maxRange: 5
+  areaRadius: 2
+  requiresLineOfSight: 1
+  basePower: 20
+  isHeal: 0
+  appliedStatus: {fileID: 0}
+  statusChance: 1
