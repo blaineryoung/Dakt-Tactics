@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Assets.Scripts.Utilities;
+using Assets.Scripts.Exceptions;
 
 /// <summary>
 /// Base unit class. Job classes (Knight, Black Mage, Archer, etc.) should
@@ -11,6 +13,7 @@ public class Unit : MonoBehaviour
     [Header("Identity")]
     public string unitName = "Unit";
     public bool isPlayerControlled = true;
+    public string UnitId { get; private set; }
 
     [Header("Core Stats")]
     public int maxHP = 100;
@@ -27,7 +30,7 @@ public class Unit : MonoBehaviour
     public int attackPower = 15;
 
     [Header("Turn/Charge Time")]
-    [HideInInspector] public int chargeTime = 0; // fills up to ChargeThreshold, then unit acts
+    public int chargeTime = 0; // fills up to ChargeThreshold, then unit acts
     public const int ChargeThreshold = 100;
 
     [HideInInspector] public Tile currentTile;
@@ -40,8 +43,12 @@ public class Unit : MonoBehaviour
     // cooldown is shared across socket groups that happen to use it twice.
     private readonly Dictionary<ActiveSkillGemData, int> _cooldowns = new Dictionary<ActiveSkillGemData, int>();
 
+
+
     private void Awake()
     {
+        TurnManager.Instance.OnUnitTurnStart += SetNextActiveUnit;
+        this.UnitId = IdGenerator.GenerateId(IdGenerator.IdType.Unit);
         currentHP = maxHP;
         currentMP = maxMP;
     }
@@ -120,11 +127,38 @@ public class Unit : MonoBehaviour
     public bool TickCharge()
     {
         chargeTime += speed;
-        if (chargeTime >= ChargeThreshold)
+        return IsReadyToAct;
+    }
+
+    private void SetNextActiveUnit(Unit unit)
+    {
+        unit.SelectAsNextActiveUnit();
+    }
+
+    public void SelectAsNextActiveUnit()
+    {
+        // When this unit is selected to act, reset its charge time so it doesn't immediately act again.
+        chargeTime = 0; 
+    }
+
+    public bool IsReadyToAct => chargeTime >= ChargeThreshold;
+
+    public override string ToString()
+    {
+        return $"{unitName} Id-{UnitId} (HP: {currentHP}/{maxHP}, MP: {currentMP}/{maxMP}, Charge: {chargeTime}/{ChargeThreshold})";
+    }
+
+    public override bool Equals(object other)
+    {
+        if (other is Unit otherUnit)
         {
-            chargeTime = 0;
-            return true;
+            return string.Equals(this.UnitId, otherUnit.UnitId, System.StringComparison.OrdinalIgnoreCase);
         }
         return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return UnitId.GetHashCode();
     }
 }

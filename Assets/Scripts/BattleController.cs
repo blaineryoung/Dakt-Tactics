@@ -52,7 +52,8 @@ public class BattleController : MonoBehaviour
         if (_selectedUnit == null || !_selectedUnit.isPlayerControlled) return;
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
 
-        Ray ray = battleCamera.ScreenPointToRay(Input.mousePosition);
+        Vector2 mousePosition = Mouse.current.position.ReadValue();
+        Ray ray = battleCamera.ScreenPointToRay(mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             Tile clickedTile = hit.collider.GetComponent<Tile>();
