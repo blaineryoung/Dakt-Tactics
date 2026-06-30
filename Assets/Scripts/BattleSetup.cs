@@ -14,20 +14,22 @@ namespace Assets.Scripts
             myUnit.isPlayerControlled = true;
             myUnit.unitName = "Dakt";
             myUnit.PlaceOnTile(GridManager.Instance.GetTile(2, 3));
-            GiveFireball(myUnit);
+            GiveSkill(myUnit, "Fireball");
+            GiveSkill(myUnit, "ColdSpike");
+            GiveSkill(myUnit, "Heal");
             TurnManager.Instance.RegisterUnit(myUnit);
 
             Unit theirUnit = Instantiate(unitPrefabTemplate);
             theirUnit.isPlayerControlled = false;
             theirUnit.unitName = "Cicero";
             theirUnit.PlaceOnTile(GridManager.Instance.GetTile(6, 3));
-            GiveFireball(theirUnit);
+            GiveSkill(theirUnit, "Fireball");
             TurnManager.Instance.RegisterUnit(theirUnit);
         }
 
-        void GiveFireball(Unit unit)
+        void GiveSkill(Unit unit, string skillName)
         {
-            ActiveSkillGemData fireball = gemDatabase.FindActive("Fireball");
+            ActiveSkillGemData fireball = gemDatabase.FindActive(skillName);
             var group = new GemSocketGroup { socketCount = 4 };
             group.TrySetActiveGem(fireball);
             unit.socketGroups.Add(group);
