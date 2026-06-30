@@ -27,7 +27,7 @@ public class BattleUIController : MonoBehaviour
         if (turnOrderText != null)
         {
             var upcoming = TurnManager.Instance.PreviewTurnOrder(5);
-            turnOrderText.text = "Turn Order: " + string.Join(" -> ", upcoming.Select(u => u.unitName));
+            turnOrderText.text = "Turn Order: " + string.Join(" -> ", upcoming.Select(u => u.ToString()));
         }
     }
 

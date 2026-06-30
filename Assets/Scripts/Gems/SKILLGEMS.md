@@ -65,6 +65,30 @@ This is intentional: it lets players experiment with gem combos without the
 game crashing or guessing intent, and gives you room to add UI feedback
 (e.g. dim the gem icon) later.
 
+## Looking up gems by name in code
+
+For one-off Inspector assignments, just drag the gem asset onto a public field.
+For dynamic lookups (loot tables, "learn skill" UI, save/load by name), use
+`GemDatabase`:
+
+1. **Assets > Create > Skills > Gem Database**, name it `GemDatabase`.
+2. Drag every `ActiveSkillGemData`/`SupportSkillGemData` asset into its two lists
+   — or right-click the component header in the Inspector and choose
+   **Auto-Populate From Project** to scan the whole project automatically
+   (editor-only, won't work in a build).
+3. Reference the database from a manager script and look gems up by name:
+   ```csharp
+   public GemDatabase gemDatabase; // assign the GemDatabase asset in the Inspector
+
+   void GiveFireball(Unit unit)
+   {
+       ActiveSkillGemData fireball = gemDatabase.FindActive("Fireball");
+       var group = new GemSocketGroup { socketCount = 4 };
+       group.TrySetActiveGem(fireball);
+       unit.socketGroups.Add(group);
+   }
+   ```
+
 ## Extending this system
 
 - **Gem leveling**: `SkillGemData.level` exists but isn't wired to scale

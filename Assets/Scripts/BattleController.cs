@@ -123,6 +123,9 @@ public class BattleController : MonoBehaviour
         if (_selectedUnit == null || _selectedSkill == null || targetTile == null) return;
         if (_hasActedThisTurn) return;
 
+        Debug.Log("Attempting to cast skill: " +
+                  $"{_selectedUnit.unitName} -> {_selectedSkill.DisplayName} on tile ({targetTile.x}, {targetTile.z}).");
+
         if (!_selectedUnit.CanUseSkill(_selectedSkill))
         {
             Debug.Log($"{_selectedUnit.unitName} cannot use {_selectedSkill.DisplayName} " +

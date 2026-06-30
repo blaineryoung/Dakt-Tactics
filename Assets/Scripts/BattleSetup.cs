@@ -6,6 +6,7 @@ namespace Assets.Scripts
     public class BattleSetup : MonoBehaviour
     {
         public Unit unitPrefabTemplate; // assign your Unit prefab here in the Inspector
+        public GemDatabase gemDatabase;
 
         private void Start()
         {
@@ -13,6 +14,7 @@ namespace Assets.Scripts
             myUnit.isPlayerControlled = true;
             myUnit.unitName = "Dakt";
             myUnit.PlaceOnTile(GridManager.Instance.GetTile(2, 3));
+            GiveFireball(myUnit);
             TurnManager.Instance.RegisterUnit(myUnit);
 
             Unit theirUnit = Instantiate(unitPrefabTemplate);
@@ -20,6 +22,14 @@ namespace Assets.Scripts
             theirUnit.unitName = "Cicero";
             theirUnit.PlaceOnTile(GridManager.Instance.GetTile(6, 3));
             TurnManager.Instance.RegisterUnit(theirUnit);
+        }
+
+        void GiveFireball(Unit unit)
+        {
+            ActiveSkillGemData fireball = gemDatabase.FindActive("Fireball");
+            var group = new GemSocketGroup { socketCount = 4 };
+            group.TrySetActiveGem(fireball);
+            unit.socketGroups.Add(group);
         }
     }
 }
