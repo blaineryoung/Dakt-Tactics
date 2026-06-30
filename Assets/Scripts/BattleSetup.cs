@@ -21,6 +21,7 @@ namespace Assets.Scripts
             theirUnit.isPlayerControlled = false;
             theirUnit.unitName = "Cicero";
             theirUnit.PlaceOnTile(GridManager.Instance.GetTile(6, 3));
+            GiveFireball(theirUnit);
             TurnManager.Instance.RegisterUnit(theirUnit);
         }
 

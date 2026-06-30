@@ -182,9 +182,90 @@ public class BattleController : MonoBehaviour
 
     private void RunSimpleAITurn(Unit aiUnit)
     {
-        // Minimal placeholder: move toward the nearest player unit, then end turn.
-        // Replace with real targeting/pathing/ability selection.
         Debug.Log($"{aiUnit.unitName} (AI) acts.");
-        EndTurn();
+
+        Unit target = FindNearestPlayerUnit(aiUnit);
+        if (target == null)
+        {
+            Debug.Log($"{aiUnit.unitName} (AI) finds no player units alive. Ending turn.");
+            EndTurn();
+            return;
+        }
+        else
+        {
+            Debug.Log($"{aiUnit.unitName} (AI) targets {target.unitName}.");
+        }
+
+        // --- Move toward the target ---
+        var reachableTiles = GridManager.Instance.GetTilesInMoveRange(
+            aiUnit.currentTile, aiUnit.moveRange, aiUnit.jumpHeight);
+
+        Tile bestTile = aiUnit.currentTile;
+        int bestDist = ManhattanDistance(aiUnit.currentTile, target.currentTile);
+
+        foreach (var tile in reachableTiles)
+        {
+            int dist = ManhattanDistance(tile, target.currentTile);
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                bestTile = tile;
+            }
+        }
+
+        if (bestTile != aiUnit.currentTile)
+        {
+            aiUnit.PlaceOnTile(bestTile);
+            Debug.Log($"{aiUnit.unitName} (AI) moves toward {target.unitName}.");
+        }
+
+        // --- Cast the first equipped skill at the target, if in range ---
+        var skills = aiUnit.GetEquippedSkills();
+        if (skills.Count == 0)
+        {
+            Debug.Log($"{aiUnit.unitName} (AI) has no equipped skills. Ending turn.");
+            EndTurn();
+            return;
+        }
+
+        EquippedSkillInstance skill = skills[0];
+        int distToTarget = ManhattanDistance(aiUnit.currentTile, target.currentTile);
+        bool inRange = distToTarget >= skill.FinalMinRange && distToTarget <= skill.FinalMaxRange;
+
+        if (inRange && aiUnit.CanUseSkill(skill))
+        {
+            // Reuse the same casting path the player uses, just driven by the AI unit.
+            _selectedUnit = aiUnit;
+            _selectedSkill = skill;
+            TryCastSelectedSkill(target.currentTile); // this also calls EndTurn() internally
+        }
+        else
+        {
+            Debug.Log($"{aiUnit.unitName} (AI) can't reach {target.unitName} with {skill.DisplayName} this turn. Ending turn.");
+            EndTurn();
+        }
     }
+
+    private Unit FindNearestPlayerUnit(Unit from)
+    {
+        Unit nearest = null;
+        int bestDist = int.MaxValue;
+
+        foreach (var unit in TurnManager.Instance.allUnits)
+        {
+            if (!unit.IsAlive || !unit.isPlayerControlled) continue;
+            int dist = ManhattanDistance(from.currentTile, unit.currentTile);
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                nearest = unit;
+            }
+        }
+
+        return nearest;
+    }
+
+    private static int ManhattanDistance(Tile a, Tile b) =>
+        Mathf.Abs(a.x - b.x) + Mathf.Abs(a.z - b.z);
+
 }
