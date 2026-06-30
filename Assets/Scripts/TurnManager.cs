@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Assets.Scripts.Exceptions;
 
 /// <summary>
 /// Implements the classic FFT "Charge Time" turn system: every unit ticks up
@@ -45,25 +46,76 @@ public class TurnManager : MonoBehaviour
         var living = allUnits.Where(u => u.IsAlive).ToList();
         if (living.Count == 0) return;
 
-        Unit ready = null;
         int safetyLimit = 10000; // avoid infinite loop in edge cases
 
-        while (ready == null && safetyLimit-- > 0)
+        bool foundUnit = false;
+        // Tick all units until one is ready to act, breaking ties by speed.
+        while (foundUnit == false && safetyLimit-- > 0)
         {
-            Unit best = null;
+            // Handle ticks first.  Keep doing that until at least one unit is ready to act.
             foreach (var unit in living)
             {
                 if (unit.TickCharge())
                 {
-                    if (best == null || unit.speed > best.speed)
-                        best = unit;
+                    foundUnit = true;
                 }
             }
-            ready = best;
         }
 
-        ActiveUnit = ready;
+        // Shouldn't happen, but just in case, if we ticked a lot and no unit is ready, throw an exception.
+        if (!foundUnit)
+        {
+            Debug.LogError("No unit became ready to act after ticking charge time.");
+            throw new NoActiveUnitFoundException("No unit became ready to act after ticking charge time.");
+        }
+
+        IEnumerable<Unit> readyUnits = living.Where(u => u.IsReadyToAct);
+        if (readyUnits.Count() == 0)
+        {
+            Debug.LogError("Units ticked an allegedly found, but the list is empty.  Probably a race condition, sucks to be you.");
+            throw new NoActiveUnitFoundException("Units ticked an allegedly found, but the list is empty.  Probably a race condition, sucks to be you.");
+        }
+
+        ActiveUnit = PickNextUnit(readyUnits.ToList(), ActiveUnit, new System.Random());
+        Debug.Log($"Next unit to act: {ActiveUnit.unitName}-{ActiveUnit.UnitId} (Charge: {ActiveUnit.chargeTime}, Speed: {ActiveUnit.speed})");
+
         OnUnitTurnStart?.Invoke(ActiveUnit);
+    }
+
+    /// <summary>
+    /// Now we pick the unit to act next.  The tiebreaker criteria is:
+    /// 1. Highest current charge.
+    /// 2. Highest speed.
+    /// 3. A unit that hasn't gone yet this round.
+    /// 4. Randomly pick one if all else fails.
+    /// </summary>
+    /// <param name="candidates">Units that are ready to act.</param>
+    /// <param name="rng"></param>
+    /// <returns>The Unit that should go next.</returns>
+    private Unit PickNextUnit(List<Unit> candidates, Unit activeUnit, System.Random rng)
+    {
+        // 1. Highest current charge
+        int maxCharge = candidates.Max(u => u.chargeTime);
+        var chargeFiltered = candidates.Where(u => u.chargeTime == maxCharge).ToList();
+        if (chargeFiltered.Count == 1)
+            return chargeFiltered[0];
+
+        // 2. Highest speed
+        int maxSpeed = chargeFiltered.Max(u => u.speed);
+        var speedFiltered = chargeFiltered.Where(u => u.speed == maxSpeed).ToList();
+        if (speedFiltered.Count == 1)
+            return speedFiltered[0];
+
+        // 3. A unit that hasn't gone yet this round
+        var notActed = speedFiltered.Where(u => u != ActiveUnit).ToList();
+        if (notActed.Count == 1)
+            return notActed[0];
+        if (notActed.Count > 1)
+            speedFiltered = notActed;
+
+        // 4. Randomly pick one if all else fails
+        int idx = rng.Next(speedFiltered.Count);
+        return speedFiltered[idx];
     }
 
     /// <summary>Returns a preview of the next N units likely to act, for UI display.</summary>

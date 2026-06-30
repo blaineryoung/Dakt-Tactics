@@ -19,6 +19,7 @@ public class GridManager : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log($"--- Initializing GridManagers ---");
         Instance = this;
         GenerateGrid();
     }
